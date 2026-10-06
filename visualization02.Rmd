@@ -7,7 +7,7 @@ output: html_document
 
 ```{r}
 library(tidyverse)
-library(patchwork)
+library(patchwork) #patchwork 是 R 里一个把多个 ggplot 图拼在一起的 package
 ```
 
 ```{r}
@@ -169,8 +169,36 @@ ggp_tmax_date =
 (ggp_tmax_tmin + ggp_prcp_dens) / ggp_tmax_date # take these 2 panels and put them together
 ```
 
+## data manipulation
+start with factors
+
+boxplots
 
 ```{r}
+weather_df |>
+  mutate(name = fct_reorder(name, tmax)) |> # 根据每个地点的 tmax 大小，重新排列 name 这个 factor
+  ggplot(aes(x = name, y = tmax)) +
+  geom_boxplot()
+```
 
+```{r}
+weather_df |>
+  mutate(name = forcats::fct_relevel(name, c("Molokai_HI", "CentralPark_NY", "Waterhole_WA"))) |> #重新排列 name 这个 factor 的 levels
+  ggplot(aes(x = name, y = tmax)) + 
+  geom_violin(aes(fill = name), color = "blue", alpha = .5) + 
+  theme(legend.position = "bottom")
+```
+make that distribtion plot
+```{r}
+weather_df |>
+  select(name, tmax, tmin) |> 
+  pivot_longer(
+    tmax:tmin,
+    names_to = "observation", 
+    values_to = "temp") |> 
+  ggplot(aes(x = temp, fill = observation)) +
+  geom_density(alpha = .5) + 
+  facet_grid(~name) + # patchwork 是 R 里一个把多个 ggplot 图拼在一起的 package
+  viridis::scale_fill_viridis(discrete = TRUE)
 ```
 
